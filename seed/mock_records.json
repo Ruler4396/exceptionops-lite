@@ -1,0 +1,869 @@
+{
+  "records": [
+    {
+      "external_ref": "PO-2026-001",
+      "default_anomaly_type": "amount_mismatch",
+      "sop_hint": "优先复核发票附加费用与审批备注。",
+      "manual_notes": [
+        "Finance reported a supplier surcharge that was not present on the PO."
+      ],
+      "similar_case_summaries": [
+        "Previous surcharge mismatch required supplier credit note before settlement."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-001",
+          "supplier": "North Harbor Plastics",
+          "currency": "CNY",
+          "ordered_qty": 120,
+          "total_amount": 16800,
+          "status": "approved",
+          "updated_at": "2026-04-10T08:00:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-001",
+          "received_qty": 120,
+          "status": "received",
+          "receiver_id": "WH-12",
+          "updated_at": "2026-04-10T11:20:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-001",
+          "billed_qty": 120,
+          "total_amount": 17980,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-11T09:00:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "SF0012026",
+            "updated_at": "2026-04-10T10:58:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-002",
+      "default_anomaly_type": "quantity_mismatch",
+      "sop_hint": "确认是否为部分收货导致的先票后货。",
+      "manual_notes": [
+        "Warehouse reported partial delivery because pallet #3 was damaged."
+      ],
+      "similar_case_summaries": [
+        "Partial receipt cases often need invoice line split before closure."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-002",
+          "supplier": "Blue Delta Controls",
+          "currency": "CNY",
+          "ordered_qty": 80,
+          "total_amount": 22400,
+          "status": "approved",
+          "updated_at": "2026-04-12T07:30:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-002",
+          "received_qty": 62,
+          "status": "received",
+          "receiver_id": "WH-03",
+          "updated_at": "2026-04-12T15:30:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-002",
+          "billed_qty": 80,
+          "total_amount": 22400,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-12T16:05:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "YTO0022026",
+            "updated_at": "2026-04-12T14:50:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-003",
+      "default_anomaly_type": "status_conflict",
+      "sop_hint": "冻结财务结算，先核验收货凭证。",
+      "manual_notes": [
+        "Invoice got approved in finance before warehouse uploaded the receipt."
+      ],
+      "similar_case_summaries": [
+        "Status skipped from delivered to settled without goods receipt closure."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-003",
+          "supplier": "West Grid Electronics",
+          "currency": "CNY",
+          "ordered_qty": 35,
+          "total_amount": 56000,
+          "status": "approved",
+          "updated_at": "2026-04-13T06:15:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-003",
+          "received_qty": 35,
+          "status": "pending",
+          "receiver_id": "WH-21",
+          "updated_at": "2026-04-13T10:00:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-003",
+          "billed_qty": 35,
+          "total_amount": 56000,
+          "currency": "CNY",
+          "status": "approved",
+          "updated_at": "2026-04-13T10:10:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "JD0032026",
+            "updated_at": "2026-04-13T09:45:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-004",
+      "default_anomaly_type": "cross_system_exception",
+      "sop_hint": "这是演示用高风险组合异常案例。",
+      "manual_notes": [
+        "Finance wants to settle the invoice, but the warehouse never confirmed the receiver.",
+        "Supplier claims the missing amount is a rush handling fee."
+      ],
+      "similar_case_summaries": [
+        "Combined amount and status anomalies were routed to ops lead review."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-004",
+          "supplier": "Sino Apex Components",
+          "currency": "CNY",
+          "ordered_qty": 200,
+          "total_amount": 46000,
+          "status": "approved",
+          "updated_at": "2026-04-09T08:20:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-004",
+          "received_qty": 180,
+          "status": "pending",
+          "receiver_id": "",
+          "updated_at": "2026-04-09T18:05:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-004",
+          "billed_qty": 200,
+          "total_amount": 48250,
+          "currency": "CNY",
+          "status": "approved",
+          "updated_at": "2026-04-09T18:20:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "ZTO0042026",
+            "updated_at": "2026-04-09T17:40:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-005",
+      "default_anomaly_type": "field_missing",
+      "sop_hint": "缺少发票号，先补证。",
+      "manual_notes": [
+        "AP clerk attached an image but never entered the official invoice number."
+      ],
+      "similar_case_summaries": [
+        "Missing invoice identifiers repeatedly caused duplicate payment checks."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-005",
+          "supplier": "Granite Industrial",
+          "currency": "CNY",
+          "ordered_qty": 18,
+          "total_amount": 14400,
+          "status": "approved",
+          "updated_at": "2026-04-11T08:10:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-005",
+          "received_qty": 18,
+          "status": "received",
+          "receiver_id": "WH-18",
+          "updated_at": "2026-04-11T15:00:00Z"
+        },
+        "invoice": {
+          "invoice_number": "",
+          "billed_qty": 18,
+          "total_amount": 14400,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-11T15:20:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "YD0052026",
+            "updated_at": "2026-04-11T14:32:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-006",
+      "default_anomaly_type": "stale_exception",
+      "sop_hint": "异常超过 72 小时无更新，需升级。",
+      "manual_notes": [
+        "No one has touched the case since the supplier disputed the received quantity."
+      ],
+      "similar_case_summaries": [
+        "Stale discrepancies usually indicate a broken owner handoff between ops and finance."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-006",
+          "supplier": "Harbor Precision Steel",
+          "currency": "CNY",
+          "ordered_qty": 64,
+          "total_amount": 35200,
+          "status": "approved",
+          "updated_at": "2026-03-31T07:00:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-006",
+          "received_qty": 58,
+          "status": "received",
+          "receiver_id": "WH-07",
+          "updated_at": "2026-03-31T16:00:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-006",
+          "billed_qty": 64,
+          "total_amount": 35200,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-03-31T16:10:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "DB0062026",
+            "updated_at": "2026-03-31T15:45:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-007",
+      "default_anomaly_type": "amount_mismatch",
+      "sop_hint": "小额差异也需要明确差异来源。",
+      "manual_notes": [
+        "Tax rounding may explain the gap, but the tax memo is missing."
+      ],
+      "similar_case_summaries": [
+        "Small gaps often come from freight or tax rounding lines added late."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-007",
+          "supplier": "Bright Axis Tools",
+          "currency": "CNY",
+          "ordered_qty": 42,
+          "total_amount": 9620,
+          "status": "approved",
+          "updated_at": "2026-04-12T06:40:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-007",
+          "received_qty": 42,
+          "status": "received",
+          "receiver_id": "WH-05",
+          "updated_at": "2026-04-12T13:15:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-007",
+          "billed_qty": 42,
+          "total_amount": 9728,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-12T13:25:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "DB0072026",
+            "updated_at": "2026-04-12T12:58:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-008",
+      "default_anomaly_type": "status_conflict",
+      "sop_hint": "物流已签收但系统未收货，需要冻结状态写回。",
+      "manual_notes": [
+        "WMS lag suspected; warehouse claims they never saw the delivery."
+      ],
+      "similar_case_summaries": [
+        "Carrier delivered while warehouse dock rejected the pallet due to damage."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-008",
+          "supplier": "Cloudline Displays",
+          "currency": "CNY",
+          "ordered_qty": 25,
+          "total_amount": 18750,
+          "status": "approved",
+          "updated_at": "2026-04-08T08:30:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-008",
+          "received_qty": 25,
+          "status": "pending",
+          "receiver_id": "WH-15",
+          "updated_at": "2026-04-08T08:35:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-008",
+          "billed_qty": 25,
+          "total_amount": 18750,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-08T08:36:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "EMS0082026",
+            "updated_at": "2026-04-08T08:10:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-009",
+      "default_anomaly_type": "quantity_mismatch",
+      "sop_hint": "确认是否异常超收。",
+      "manual_notes": [
+        "Warehouse scanned two extra boxes that are not on the PO."
+      ],
+      "similar_case_summaries": [
+        "Over-receipt cases usually require warehouse recount and supplier claim."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-009",
+          "supplier": "Red Lantern Cables",
+          "currency": "CNY",
+          "ordered_qty": 96,
+          "total_amount": 28800,
+          "status": "approved",
+          "updated_at": "2026-04-07T07:20:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-009",
+          "received_qty": 104,
+          "status": "received",
+          "receiver_id": "WH-09",
+          "updated_at": "2026-04-07T15:40:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-009",
+          "billed_qty": 96,
+          "total_amount": 28800,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-07T15:48:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "SF0092026",
+            "updated_at": "2026-04-07T15:10:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-010",
+      "default_anomaly_type": "field_missing",
+      "sop_hint": "物流追踪号缺失，证据链不完整。",
+      "manual_notes": [
+        "Supplier sent the shipment manually and never provided tracking metadata."
+      ],
+      "similar_case_summaries": [
+        "Without tracking number the team could not establish whether delivery really happened."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-010",
+          "supplier": "Atlas Heat Exchange",
+          "currency": "CNY",
+          "ordered_qty": 12,
+          "total_amount": 24600,
+          "status": "approved",
+          "updated_at": "2026-04-12T09:10:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-010",
+          "received_qty": 12,
+          "status": "pending",
+          "receiver_id": "WH-11",
+          "updated_at": "2026-04-12T17:40:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-010",
+          "billed_qty": 12,
+          "total_amount": 24600,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-12T17:50:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "in_transit",
+            "tracking_number": "",
+            "updated_at": "2026-04-12T16:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-011",
+      "default_anomaly_type": "status_conflict",
+      "sop_hint": "已批准发票但收货未关闭且久未更新。",
+      "manual_notes": [
+        "Finance approved the invoice on month-end close, but warehouse remained pending."
+      ],
+      "similar_case_summaries": [
+        "Month-end status jumps often hide manual bypasses."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-011",
+          "supplier": "Helios Cooling",
+          "currency": "CNY",
+          "ordered_qty": 60,
+          "total_amount": 31800,
+          "status": "approved",
+          "updated_at": "2026-03-29T08:00:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-011",
+          "received_qty": 60,
+          "status": "pending",
+          "receiver_id": "WH-04",
+          "updated_at": "2026-03-29T09:00:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-011",
+          "billed_qty": 60,
+          "total_amount": 31800,
+          "currency": "CNY",
+          "status": "approved",
+          "updated_at": "2026-03-29T09:10:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "ZX0112026",
+            "updated_at": "2026-03-29T08:42:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-012",
+      "default_anomaly_type": "cross_system_exception",
+      "sop_hint": "金额和数量同时异常，先核对最小可追溯证据。",
+      "manual_notes": [
+        "Supplier invoiced 155 units although warehouse closed at 148 received."
+      ],
+      "similar_case_summaries": [
+        "Mixed quantity and amount discrepancies often come from unauthorized substitution."
+      ],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-012",
+          "supplier": "Nova Packaging",
+          "currency": "CNY",
+          "ordered_qty": 150,
+          "total_amount": 19500,
+          "status": "approved",
+          "updated_at": "2026-04-10T06:25:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-012",
+          "received_qty": 148,
+          "status": "received",
+          "receiver_id": "WH-02",
+          "updated_at": "2026-04-10T13:10:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-012",
+          "billed_qty": 155,
+          "total_amount": 20150,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-10T13:20:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "ZT0122026",
+            "updated_at": "2026-04-10T12:58:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-013",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "Clean baseline case."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-013",
+          "supplier": "Orion Molds",
+          "currency": "CNY",
+          "ordered_qty": 40,
+          "total_amount": 8800,
+          "status": "approved",
+          "updated_at": "2026-04-14T08:00:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-013",
+          "received_qty": 40,
+          "status": "received",
+          "receiver_id": "WH-20",
+          "updated_at": "2026-04-14T11:00:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-013",
+          "billed_qty": 40,
+          "total_amount": 8800,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T11:10:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0132026",
+            "updated_at": "2026-04-14T10:40:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-014",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "Receipt and invoice reconciled cleanly."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-014",
+          "supplier": "Vertex Bearings",
+          "currency": "CNY",
+          "ordered_qty": 22,
+          "total_amount": 13200,
+          "status": "approved",
+          "updated_at": "2026-04-14T08:20:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-014",
+          "received_qty": 22,
+          "status": "received",
+          "receiver_id": "WH-06",
+          "updated_at": "2026-04-14T10:20:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-014",
+          "billed_qty": 22,
+          "total_amount": 13200,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T10:35:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0142026",
+            "updated_at": "2026-04-14T09:55:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-015",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "Low-value order settled without discrepancy."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-015",
+          "supplier": "Riverbend Labels",
+          "currency": "CNY",
+          "ordered_qty": 300,
+          "total_amount": 7200,
+          "status": "approved",
+          "updated_at": "2026-04-14T08:10:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-015",
+          "received_qty": 300,
+          "status": "received",
+          "receiver_id": "WH-14",
+          "updated_at": "2026-04-14T12:10:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-015",
+          "billed_qty": 300,
+          "total_amount": 7200,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T12:15:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0152026",
+            "updated_at": "2026-04-14T11:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-016",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "PO, receipt, and invoice all align."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-016",
+          "supplier": "Polar Optics",
+          "currency": "CNY",
+          "ordered_qty": 10,
+          "total_amount": 41000,
+          "status": "approved",
+          "updated_at": "2026-04-14T07:40:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-016",
+          "received_qty": 10,
+          "status": "received",
+          "receiver_id": "WH-01",
+          "updated_at": "2026-04-14T09:50:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-016",
+          "billed_qty": 10,
+          "total_amount": 41000,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T09:55:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0162026",
+            "updated_at": "2026-04-14T09:30:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-017",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "No manual interventions required."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-017",
+          "supplier": "Lattice Motion",
+          "currency": "CNY",
+          "ordered_qty": 68,
+          "total_amount": 30600,
+          "status": "approved",
+          "updated_at": "2026-04-14T07:55:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-017",
+          "received_qty": 68,
+          "status": "received",
+          "receiver_id": "WH-08",
+          "updated_at": "2026-04-14T11:25:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-017",
+          "billed_qty": 68,
+          "total_amount": 30600,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T11:30:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0172026",
+            "updated_at": "2026-04-14T10:45:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-018",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "Consistent invoice and receipt for tooling replenishment."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-018",
+          "supplier": "Metro Casting",
+          "currency": "CNY",
+          "ordered_qty": 52,
+          "total_amount": 15600,
+          "status": "approved",
+          "updated_at": "2026-04-14T07:35:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-018",
+          "received_qty": 52,
+          "status": "received",
+          "receiver_id": "WH-16",
+          "updated_at": "2026-04-14T10:25:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-018",
+          "billed_qty": 52,
+          "total_amount": 15600,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T10:30:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0182026",
+            "updated_at": "2026-04-14T10:00:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-019",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "Baseline supplier replenishment."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-019",
+          "supplier": "Terra Fasteners",
+          "currency": "CNY",
+          "ordered_qty": 180,
+          "total_amount": 19800,
+          "status": "approved",
+          "updated_at": "2026-04-14T08:05:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-019",
+          "received_qty": 180,
+          "status": "received",
+          "receiver_id": "WH-10",
+          "updated_at": "2026-04-14T12:00:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-019",
+          "billed_qty": 180,
+          "total_amount": 19800,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T12:05:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0192026",
+            "updated_at": "2026-04-14T11:35:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "external_ref": "PO-2026-020",
+      "default_anomaly_type": "normal",
+      "sop_hint": "对照样本。",
+      "manual_notes": [
+        "No exception signals."
+      ],
+      "similar_case_summaries": [],
+      "records": {
+        "purchase_order": {
+          "po_number": "PO-2026-020",
+          "supplier": "Summit Resin Works",
+          "currency": "CNY",
+          "ordered_qty": 75,
+          "total_amount": 22500,
+          "status": "approved",
+          "updated_at": "2026-04-14T08:15:00Z"
+        },
+        "goods_receipt": {
+          "gr_number": "GR-2026-020",
+          "received_qty": 75,
+          "status": "received",
+          "receiver_id": "WH-13",
+          "updated_at": "2026-04-14T11:45:00Z"
+        },
+        "invoice": {
+          "invoice_number": "INV-2026-020",
+          "billed_qty": 75,
+          "total_amount": 22500,
+          "currency": "CNY",
+          "status": "pending",
+          "updated_at": "2026-04-14T11:50:00Z"
+        },
+        "shipment_or_status_log": [
+          {
+            "status": "delivered",
+            "tracking_number": "OK0202026",
+            "updated_at": "2026-04-14T11:10:00Z"
+          }
+        ]
+      }
+    }
+  ]
+}

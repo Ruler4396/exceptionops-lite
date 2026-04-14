@@ -1,0 +1,73 @@
+app:
+  name: ExceptionOps Lite Workflow
+  type: workflow
+  description: Rule-first exception analysis workflow for enterprise operations cases.
+
+inputs:
+  - case_id: string
+  - anomaly_type: string
+  - external_ref: string
+  - user_description: string
+
+nodes:
+  - id: start
+    type: start
+    outputs:
+      - case_id
+      - anomaly_type
+      - external_ref
+      - user_description
+
+  - id: fetch_context
+    type: http_request
+    method: GET
+    url: "{{backend_base_url}}/api/cases/{{case_id}}/context"
+    outputs:
+      - records
+      - rule_results
+      - notes
+      - matched_sop_refs
+
+  - id: compact_context
+    type: code
+    language: python3
+    script_path: dify/code_node_context_compactor.py
+    inputs:
+      - records
+      - rule_results
+      - notes
+      - matched_sop_refs
+
+  - id: retrieve_sop
+    type: knowledge_retrieval
+    dataset: exceptionops-lite-kb
+    query: "{{ compact_context.prompt_query }}"
+
+  - id: llm_analysis
+    type: llm
+    prompt_path: dify/prompts/system_prompt.md
+    response_format: json
+    required_fields:
+      - summary
+      - anomaly_type
+      - evidence_used
+      - possible_causes
+      - recommended_action
+      - risk_level
+      - needs_human_review
+      - review_reason
+      - audit_payload
+
+  - id: final_output
+    type: end
+    outputs:
+      - summary
+      - anomaly_type
+      - evidence_used
+      - possible_causes
+      - recommended_action
+      - risk_level
+      - needs_human_review
+      - review_reason
+      - audit_payload
+

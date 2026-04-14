@@ -1,0 +1,46 @@
+{
+  "documents": [
+    {
+      "id": "sop-amount-dispute",
+      "title": "金额差异复核 SOP",
+      "path": "seed/sop/amount-dispute.md",
+      "rule_tags": ["AMOUNT_MISMATCH"]
+    },
+    {
+      "id": "sop-quantity-reconcile",
+      "title": "数量差异对账 SOP",
+      "path": "seed/sop/quantity-reconcile.md",
+      "rule_tags": ["QUANTITY_MISMATCH"]
+    },
+    {
+      "id": "sop-status-freeze",
+      "title": "状态冲突冻结 SOP",
+      "path": "seed/sop/status-freeze.md",
+      "rule_tags": ["STATUS_CONFLICT"]
+    },
+    {
+      "id": "sop-evidence-completion",
+      "title": "关键字段补证 SOP",
+      "path": "seed/sop/evidence-completion.md",
+      "rule_tags": ["MISSING_CRITICAL_FIELD"]
+    },
+    {
+      "id": "sop-stale-escalation",
+      "title": "超时异常升级 SOP",
+      "path": "seed/sop/stale-escalation.md",
+      "rule_tags": ["STALE_UPDATE"]
+    },
+    {
+      "id": "sop-review-standard",
+      "title": "高风险人工审核标准",
+      "path": "seed/sop/review-standard.md",
+      "rule_tags": [
+        "AMOUNT_MISMATCH",
+        "STATUS_CONFLICT",
+        "MISSING_CRITICAL_FIELD",
+        "STALE_UPDATE"
+      ]
+    }
+  ]
+}
+
