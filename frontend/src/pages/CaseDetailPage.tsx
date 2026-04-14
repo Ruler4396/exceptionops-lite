@@ -16,6 +16,15 @@ const anomalyTypeLabel: Record<string, string> = {
   normal: "正常对照",
 };
 
+const riskFlagLabel: Record<string, string> = {
+  amount_adjustment: "涉及金额调整",
+  insufficient_evidence: "证据不足",
+  missing_critical_field: "关键字段缺失",
+  multiple_possible_causes: "存在多种可能原因",
+  stale_exception: "异常长期未更新",
+  status_change: "涉及状态变更",
+};
+
 function formatDate(value: string) {
   return new Date(value).toLocaleString("zh-CN", {
     year: "numeric",
@@ -91,8 +100,8 @@ function getEvidenceNotes(detail: CaseDetail) {
   const statusItems = (records.shipment_or_status_log as Array<Record<string, unknown>> | undefined) ?? [];
   const statusLog = statusItems[statusItems.length - 1] ?? {};
   return [
-    `PO: ${(records.purchase_order as Record<string, unknown> | undefined)?.po_number ?? "-"}`,
-    `GR: ${(records.goods_receipt as Record<string, unknown> | undefined)?.gr_number ?? "-"}`,
+    `采购单：${(records.purchase_order as Record<string, unknown> | undefined)?.po_number ?? "-"}`,
+    `收货单：${(records.goods_receipt as Record<string, unknown> | undefined)?.gr_number ?? "-"}`,
     `发票: ${(records.invoice as Record<string, unknown> | undefined)?.invoice_number || "缺失"}`,
     `最新物流: ${String(statusLog.status ?? "-")}`,
   ];
@@ -264,7 +273,7 @@ export function CaseDetailPage() {
                     <tr key={`${hit.rule_code}-${hit.message}`}>
                       <td>{hit.rule_code}</td>
                       <td>
-                        <span className={`risk-pill risk-${hit.severity}`}>{hit.severity}</span>
+                        <span className={`risk-pill risk-${hit.severity}`}>{riskText(hit.severity)}</span>
                       </td>
                       <td>{hit.evidence_refs.join(" / ")}</td>
                       <td>{hit.suggested_next_checks[0] ?? "-"}</td>
@@ -275,7 +284,7 @@ export function CaseDetailPage() {
             </div>
             <div className="flag-strip">
               {(detail.rule_results?.risk_flags ?? []).map((flag) => (
-                <span key={flag}>{flag}</span>
+                <span key={flag}>{riskFlagLabel[flag] ?? flag}</span>
               ))}
             </div>
           </SectionCard>

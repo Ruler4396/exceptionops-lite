@@ -92,12 +92,7 @@ def _build_human_summary(payload: dict[str, Any], rule_results: dict[str, Any]) 
     if not summary_parts:
         return f"单号 {payload['external_ref']} 当前未发现明显冲突，系统判断为{anomaly_label}。"
 
-    tail = (
-        "当前建议进入人工确认。"
-        if rule_results["needs_human_review"]
-        else "当前可按低风险路径继续处理。"
-    )
-    return f"单号 {payload['external_ref']} 存在{anomaly_label}：{'；'.join(summary_parts)}。{tail}"
+    return f"单号 {payload['external_ref']} 存在{anomaly_label}：{'；'.join(summary_parts)}。"
 
 
 def build_local_analysis(payload: dict[str, Any]) -> dict[str, Any]:
