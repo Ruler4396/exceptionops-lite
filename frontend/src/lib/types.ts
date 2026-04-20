@@ -39,6 +39,9 @@ export interface CaseDetail {
     status: CaseStatus;
     owner: string;
     queue_bucket: string;
+    assigned_at?: string | null;
+    due_at?: string | null;
+    sla_status: "on_track" | "due_soon" | "overdue" | "closed" | "untracked";
     created_at: string;
     updated_at: string;
   };
@@ -68,6 +71,7 @@ export interface QueueMetrics {
   all_open: number;
   waiting_review: number;
   needs_more_info: number;
+  overdue: number;
   high_risk: number;
   completed: number;
 }
@@ -81,6 +85,9 @@ export interface QueueItem {
   risk_level: "low" | "medium" | "high";
   rule_hit_count: number;
   owner: string;
+  assigned_at?: string | null;
+  due_at?: string | null;
+  sla_status: "on_track" | "due_soon" | "overdue" | "closed" | "untracked";
   updated_at: string;
   created_at: string;
   summary: string;

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { SectionCard } from "../components/SectionCard";
 import { StatusBadge } from "../components/StatusBadge";
 import { Timeline } from "../components/Timeline";
-import { analyzeCase, fetchCaseDetail, submitReview } from "../lib/api";
+import { analyzeCase, assignCase, fetchCaseDetail, submitReview } from "../lib/api";
 import type { CaseDetail } from "../lib/types";
 
 const anomalyTypeLabel: Record<string, string> = {
@@ -25,6 +25,8 @@ const riskFlagLabel: Record<string, string> = {
   status_change: "涉及状态变更",
 };
 
+const ownerOptions = ["运营处理组", "财务支持组", "采购运营组", "供应链复核组"];
+
 function formatDate(value: string) {
   return new Date(value).toLocaleString("zh-CN", {
     year: "numeric",
@@ -40,6 +42,14 @@ function riskText(value: "low" | "medium" | "high" | undefined) {
   if (value === "medium") return "中";
   if (value === "low") return "低";
   return "未知";
+}
+
+function getSlaLabel(value: CaseDetail["base_info"]["sla_status"]) {
+  if (value === "overdue") return "已逾期";
+  if (value === "due_soon") return "即将到期";
+  if (value === "on_track") return "进行中";
+  if (value === "closed") return "已关闭";
+  return "未跟踪";
 }
 
 function getComparisonRows(records: Record<string, unknown> | null) {
@@ -117,6 +127,9 @@ export function CaseDetailPage() {
   const [reviewer, setReviewer] = useState("ops.lead@example.com");
   const [decision, setDecision] = useState("approve");
   const [comment, setComment] = useState("建议按 SOP 执行人工闭环，并保留当前限制。");
+  const [owner, setOwner] = useState("运营处理组");
+  const [assigner, setAssigner] = useState("ops.lead@example.com");
+  const [assignComment, setAssignComment] = useState("转派到对应处理组继续跟进。");
 
   const loadCase = useEffectEvent(async (silent = false) => {
     if (!silent) {
@@ -125,6 +138,7 @@ export function CaseDetailPage() {
     try {
       const payload = await fetchCaseDetail(caseId);
       setDetail(payload);
+      setOwner(payload.base_info.owner);
       setError("");
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "加载案例失败。");
@@ -162,6 +176,24 @@ export function CaseDetailPage() {
       await loadCase();
     } catch (actionError) {
       setError(actionError instanceof Error ? actionError.message : "审核提交失败。");
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function handleAssign(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setActionLoading(true);
+    try {
+      await assignCase(caseId, {
+        owner,
+        assigned_by: assigner,
+        comment: assignComment,
+        reset_sla: false,
+      });
+      await loadCase();
+    } catch (actionError) {
+      setError(actionError instanceof Error ? actionError.message : "转派失败。");
     } finally {
       setActionLoading(false);
     }
@@ -206,6 +238,7 @@ export function CaseDetailPage() {
           </p>
         </div>
         <div className="hero-actions">
+          <span className={`sla-pill sla-${detail.base_info.sla_status}`}>{getSlaLabel(detail.base_info.sla_status)}</span>
           <span className={`risk-pill risk-${detail.rule_results?.risk_level ?? "low"}`}>
             {riskText(detail.rule_results?.risk_level)}
           </span>
@@ -330,11 +363,46 @@ export function CaseDetailPage() {
                 <span>最近更新</span>
                 <strong>{formatDate(detail.base_info.updated_at)}</strong>
               </div>
+              <div className="summary-item">
+                <span>SLA 截止</span>
+                <strong>{detail.base_info.due_at ? formatDate(detail.base_info.due_at) : "无"}</strong>
+              </div>
+              <div className="summary-item">
+                <span>SLA 状态</span>
+                <strong>{getSlaLabel(detail.base_info.sla_status)}</strong>
+              </div>
             </div>
             <div className="summary-copy">
               <h3>摘要</h3>
               <p>{detail.ai_result?.summary ?? detail.base_info.user_description}</p>
             </div>
+          </SectionCard>
+
+          <SectionCard eyebrow="协同" title="处理分派">
+            <form className="review-form" onSubmit={handleAssign}>
+              <label>
+                当前负责人
+                <select value={owner} onChange={(event) => setOwner(event.target.value)}>
+                  {ownerOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                操作人
+                <input value={assigner} onChange={(event) => setAssigner(event.target.value)} />
+              </label>
+              <label>
+                转派备注
+                <textarea value={assignComment} onChange={(event) => setAssignComment(event.target.value)} rows={3} />
+              </label>
+              <button className="ghost-button full-width" type="submit" disabled={actionLoading}>
+                {actionLoading ? "提交中..." : "更新负责人"}
+              </button>
+              <p className="form-hint">转派后保留原有时间线与处理留痕</p>
+            </form>
           </SectionCard>
 
           <SectionCard eyebrow="分析" title="建议动作">

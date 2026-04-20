@@ -48,6 +48,14 @@ function formatDate(value: string) {
   });
 }
 
+function getSlaLabel(value: QueueItem["sla_status"]) {
+  if (value === "overdue") return "已逾期";
+  if (value === "due_soon") return "即将到期";
+  if (value === "on_track") return "进行中";
+  if (value === "closed") return "已关闭";
+  return "未跟踪";
+}
+
 type SortField = "case_id" | "updated_at" | "case_type" | "risk_level" | "status" | "owner";
 type SortDirection = "asc" | "desc";
 
@@ -65,6 +73,7 @@ function getStatusLabel(status: QueueItem["status"]) {
 export function InboxPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>("all");
+  const [slaFilter, setSlaFilter] = useState<"all" | "overdue">("all");
   const [query, setQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("updated_at");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -72,7 +81,7 @@ export function InboxPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchCaseQueue()
+    fetchCaseQueue(activeTab, slaFilter)
       .then((payload) => {
         setData(payload);
         setError("");
@@ -80,12 +89,11 @@ export function InboxPage() {
       .catch((loadError) => {
         setError(loadError instanceof Error ? loadError.message : "加载队列失败。");
       });
-  }, []);
+  }, [activeTab, slaFilter]);
 
   const items = useMemo(() => {
     const source = data?.items ?? [];
     const filtered = source.filter((item) => {
-      const tabMatch = activeTab === "all" || item.status === activeTab;
       const queryLower = query.trim().toLowerCase();
       const queryMatch =
         queryLower.length === 0 ||
@@ -93,7 +101,7 @@ export function InboxPage() {
         item.external_ref.toLowerCase().includes(queryLower) ||
         item.summary.toLowerCase().includes(queryLower) ||
         item.owner.toLowerCase().includes(queryLower);
-      return tabMatch && queryMatch;
+      return queryMatch;
     });
     return [...filtered].sort((left, right) => {
       let comparison = 0;
@@ -120,7 +128,7 @@ export function InboxPage() {
 
       return sortDirection === "asc" ? comparison : -comparison;
     });
-  }, [activeTab, data?.items, query, sortDirection, sortField]);
+  }, [data?.items, query, sortDirection, sortField]);
 
   function handleSort(field: SortField) {
     if (sortField === field) {
@@ -172,6 +180,10 @@ export function InboxPage() {
           <span>待补证</span>
         </article>
         <article className="kpi-card">
+          <strong>{data?.metrics.overdue ?? 0}</strong>
+          <span>已逾期</span>
+        </article>
+        <article className="kpi-card">
           <strong>{data?.metrics.high_risk ?? 0}</strong>
           <span>高风险</span>
         </article>
@@ -183,16 +195,32 @@ export function InboxPage() {
 
       <section className="queue-panel">
         <div className="queue-toolbar">
-          <div className="tab-strip">
-            {tabs.map((tab) => (
+          <div className="queue-filters">
+            <div className="tab-strip">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={tab.id === activeTab ? "tab-button active" : "tab-button"}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            <div className="scope-strip">
               <button
-                key={tab.id}
-                className={tab.id === activeTab ? "tab-button active" : "tab-button"}
-                onClick={() => setActiveTab(tab.id)}
+                className={slaFilter === "all" ? "scope-button active" : "scope-button"}
+                onClick={() => setSlaFilter("all")}
               >
-                {tab.label}
+                全部 SLA
               </button>
-            ))}
+              <button
+                className={slaFilter === "overdue" ? "scope-button active" : "scope-button"}
+                onClick={() => setSlaFilter("overdue")}
+              >
+                仅看逾期
+              </button>
+            </div>
           </div>
           <div className="queue-meta">
             <span className="queue-count">共 {items.length} 条</span>
@@ -246,7 +274,12 @@ export function InboxPage() {
                       <em>查看详情</em>
                     </div>
                   </td>
-                  <td className="cell-center">{formatDate(item.updated_at)}</td>
+                  <td className="cell-center">
+                    <div className="time-cell">
+                      <strong>{formatDate(item.updated_at)}</strong>
+                      <span className={`sla-pill sla-${item.sla_status}`}>{getSlaLabel(item.sla_status)}</span>
+                    </div>
+                  </td>
                   <td>{anomalyTypeLabel[item.case_type] ?? item.case_type}</td>
                   <td className="cell-center">
                     <span className={`risk-pill risk-${item.risk_level}`}>

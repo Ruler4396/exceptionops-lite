@@ -14,6 +14,7 @@ function getEventLabel(eventType: string) {
   const mapping: Record<string, string> = {
     case_seeded: "案例已入库",
     case_created: "案例已创建",
+    assignment_updated: "负责人已更新",
     context_ready: "证据快照已生成",
     context_failed: "证据快照失败",
     analysis_started: "分析已启动",
@@ -95,6 +96,15 @@ function buildTimelineContent(log: CaseDetail["audit_logs"][number]) {
     return {
       title: getEventLabel(log.event_type),
       description: comment,
+      tags,
+    };
+  }
+
+  if (log.event_type === "assignment_updated") {
+    const tags = [payload.from_owner, payload.to_owner, payload.assigned_by].filter(Boolean).map(String);
+    return {
+      title: getEventLabel(log.event_type),
+      description: payload.comment ? `转派备注：${String(payload.comment)}` : "案例负责人已调整。",
       tags,
     };
   }

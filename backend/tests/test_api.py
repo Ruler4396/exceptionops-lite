@@ -53,6 +53,21 @@ def test_create_context_analyze_and_review_flow() -> None:
     analysis = analyze_response.json()
     assert analysis["ai_result"]["summary"]
     assert analysis["current_status"] in {"waiting_review", "completed"}
+    assert analysis["ai_result"]["risk_level"] in {"low", "medium", "high"}
+
+    assign_response = client.post(
+        f"/api/cases/{case_id}/assign",
+        json={
+            "owner": "供应链复核组",
+            "assigned_by": "ops.lead@example.com",
+            "comment": "转派到供应链复核队列。",
+            "reset_sla": True,
+        },
+    )
+    assert assign_response.status_code == 200
+    assign_payload = assign_response.json()
+    assert assign_payload["owner"] == "供应链复核组"
+    assert assign_payload["sla_status"] in {"on_track", "due_soon", "overdue", "closed", "untracked"}
 
     review_response = client.post(
         f"/api/cases/{case_id}/review",
@@ -69,4 +84,10 @@ def test_create_context_analyze_and_review_flow() -> None:
     assert detail_response.status_code == 200
     detail = detail_response.json()
     assert detail["review_result"]["decision"] == "approve"
-    assert len(detail["audit_logs"]) >= 4
+    assert detail["base_info"]["owner"] == "供应链复核组"
+    assert detail["base_info"]["sla_status"] == "closed"
+    assert len(detail["audit_logs"]) >= 5
+
+    overdue_response = client.get("/api/cases?sla_status=overdue")
+    assert overdue_response.status_code == 200
+    assert "items" in overdue_response.json()

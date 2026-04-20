@@ -30,6 +30,16 @@ export function analyzeCase(caseId: string) {
   );
 }
 
+export function assignCase(
+  caseId: string,
+  payload: { owner: string; assigned_by: string; comment?: string; reset_sla?: boolean },
+) {
+  return apiRequest<{ owner: string; due_at?: string; sla_status: string }>(`/cases/${caseId}/assign`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function fetchCaseDetail(caseId: string): Promise<CaseDetail> {
   return apiRequest(`/cases/${caseId}`);
 }
@@ -44,10 +54,13 @@ export function submitReview(
   });
 }
 
-export function fetchCaseQueue(status = "all"): Promise<CaseQueueResponse> {
+export function fetchCaseQueue(status = "all", slaStatus = "all"): Promise<CaseQueueResponse> {
   const params = new URLSearchParams();
   if (status && status !== "all") {
     params.set("status", status);
+  }
+  if (slaStatus && slaStatus !== "all") {
+    params.set("sla_status", slaStatus);
   }
   const suffix = params.toString() ? `?${params.toString()}` : "";
   return apiRequest(`/cases${suffix}`);

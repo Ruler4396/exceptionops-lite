@@ -210,7 +210,7 @@ pre {
 
 .kpi-strip {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -277,7 +277,16 @@ pre {
   flex-wrap: wrap;
 }
 
+.queue-filters,
+.scope-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .tab-button,
+.scope-button,
 .ghost-button,
 .primary-button {
   border: 1px solid var(--line);
@@ -290,13 +299,15 @@ pre {
 }
 
 .tab-button:hover,
+.scope-button:hover,
 .ghost-button:hover,
 .primary-button:hover,
 .queue-table tbody tr:hover {
   transform: translateY(-1px);
 }
 
-.tab-button.active {
+.tab-button.active,
+.scope-button.active {
   background: var(--accent-soft);
   border-color: rgba(37, 99, 235, 0.18);
   color: #1d4ed8;
@@ -315,6 +326,7 @@ pre {
 }
 
 .tab-button:focus-visible,
+.scope-button:focus-visible,
 .ghost-button:focus-visible,
 .primary-button:focus-visible,
 .table-sort-button:focus-visible {
@@ -323,6 +335,7 @@ pre {
 }
 
 .tab-button:active,
+.scope-button:active,
 .ghost-button:active,
 .primary-button:active,
 .queue-row:active {
@@ -404,6 +417,16 @@ pre {
   line-height: 1.45;
 }
 
+.time-cell {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+.time-cell strong {
+  font-size: 14px;
+}
+
 .summary-cell {
   min-width: 280px;
   max-width: 460px;
@@ -443,6 +466,7 @@ pre {
 }
 
 .status-badge,
+.sla-pill,
 .risk-pill,
 .result-pill {
   display: inline-flex;
@@ -456,6 +480,31 @@ pre {
   letter-spacing: 0.02em;
   white-space: nowrap;
   border-radius: 999px;
+}
+
+.sla-on_track {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.18);
+  color: #1d4ed8;
+}
+
+.sla-due_soon {
+  background: rgba(183, 121, 31, 0.1);
+  border-color: rgba(183, 121, 31, 0.22);
+  color: #8c5b18;
+}
+
+.sla-overdue {
+  background: rgba(216, 79, 60, 0.1);
+  border-color: rgba(216, 79, 60, 0.22);
+  color: #a63a2c;
+}
+
+.sla-closed,
+.sla-untracked {
+  background: rgba(97, 116, 138, 0.08);
+  border-color: rgba(97, 116, 138, 0.18);
+  color: #61748a;
 }
 
 .status-created,
@@ -723,6 +772,10 @@ pre {
   .queue-toolbar {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .queue-filters {
+    width: 100%;
   }
 
   .workspace-actions {

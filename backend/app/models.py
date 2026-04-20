@@ -17,6 +17,9 @@ class Case(Base):
     external_ref: Mapped[str] = mapped_column(String(64), index=True)
     user_description: Mapped[str] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    owner: Mapped[str] = mapped_column(String(128), default="")
+    assigned_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    due_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     status: Mapped[str] = mapped_column(String(32), default="created")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
@@ -74,4 +77,3 @@ class CaseAuditLog(Base):
     event_type: Mapped[str] = mapped_column(String(48))
     payload_json: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Query
@@ -17,6 +17,7 @@ from .models import Case, CaseAIResult, CaseAuditLog, CaseContextSnapshot, CaseR
 from .rules import evaluate_rules
 from .schemas import (
     AnalyzeCaseResponse,
+    AssignmentUpdate,
     AuditLogEntry,
     CaseCreateRequest,
     CaseCreateResponse,
@@ -31,6 +32,13 @@ DEMO_REVIEWERS = [
     "ops.lead@example.com",
     "finance.reviewer@example.com",
     "procurement.pm@example.com",
+]
+
+TEAM_OWNERS = [
+    "运营处理组",
+    "财务支持组",
+    "采购运营组",
+    "供应链复核组",
 ]
 
 
@@ -65,14 +73,23 @@ def _log_event(db: Session, case_id: str, event_type: str, payload: dict[str, An
 
 
 def _demo_owner(external_ref: str) -> str:
-    suffix = int(external_ref.split("-")[-1])
-    owners = [
-        "运营处理组",
-        "财务支持组",
-        "采购运营组",
-        "供应链复核组",
-    ]
-    return owners[(suffix - 1) % len(owners)]
+    suffix = external_ref.split("-")[-1]
+    try:
+        index = int(suffix)
+    except ValueError:
+        index = (sum(ord(char) for char in external_ref) % len(TEAM_OWNERS)) + 1
+    return TEAM_OWNERS[(index - 1) % len(TEAM_OWNERS)]
+
+
+def _default_owner(case_type: str, external_ref: str) -> str:
+    owner_mapping = {
+        "amount_mismatch": "财务支持组",
+        "quantity_mismatch": "采购运营组",
+        "status_conflict": "供应链复核组",
+        "field_missing": "运营处理组",
+        "stale_exception": "运营处理组",
+    }
+    return owner_mapping.get(case_type, _demo_owner(external_ref))
 
 
 def _queue_bucket(status: str) -> str:
@@ -87,6 +104,52 @@ def _queue_bucket(status: str) -> str:
         "analyzing": "new",
     }
     return mapping.get(status, "new")
+
+
+def _risk_level_for_case(case: Case, context: CaseContextSnapshot | None, ai_row: CaseAIResult | None) -> str:
+    if ai_row is not None:
+        return ai_row.risk_level
+    if context is not None:
+        return context.rule_results_json.get("risk_level", "low")
+    return "low"
+
+
+def _sla_hours(status: str, risk_level: str) -> int | None:
+    if status in {"completed", "rejected", "failed"}:
+        return None
+    mapping = {
+        "waiting_review": {"high": 4, "medium": 8, "low": 16},
+        "needs_more_info": {"high": 8, "medium": 16, "low": 24},
+        "created": {"high": 6, "medium": 12, "low": 24},
+        "context_ready": {"high": 6, "medium": 12, "low": 24},
+        "analyzing": {"high": 2, "medium": 4, "low": 8},
+    }
+    default_bucket = mapping["created"]
+    return mapping.get(status, default_bucket).get(risk_level, 24)
+
+
+def _apply_sla(case: Case, risk_level: str, base_time: datetime | None = None) -> None:
+    hours = _sla_hours(case.status, risk_level)
+    if hours is None:
+        case.due_at = None
+        return
+    reference = base_time or datetime.utcnow()
+    case.due_at = reference + timedelta(hours=hours)
+    if case.assigned_at is None:
+        case.assigned_at = reference
+
+
+def _sla_status(case: Case) -> str:
+    if case.status in {"completed", "rejected", "failed"}:
+        return "closed"
+    if case.due_at is None:
+        return "untracked"
+    remaining = case.due_at - datetime.utcnow()
+    if remaining.total_seconds() < 0:
+        return "overdue"
+    if remaining <= timedelta(hours=2):
+        return "due_soon"
+    return "on_track"
 
 
 def _latest_context(db: Session, case_id: str) -> CaseContextSnapshot | None:
@@ -248,6 +311,8 @@ def _seed_demo_cases(db: Session) -> None:
             external_ref=bundle["external_ref"],
             user_description=bundle.get("sop_hint") or bundle.get("manual_notes", [""])[0],
             notes=(bundle.get("manual_notes") or [None])[0],
+            owner=_default_owner(bundle.get("default_anomaly_type", "cross_system_exception"), bundle["external_ref"]),
+            assigned_at=datetime.utcnow(),
             status="created",
         )
         db.add(case)
@@ -320,6 +385,10 @@ def _seed_demo_cases(db: Session) -> None:
         else:
             case.status = "completed"
 
+        _apply_sla(case, ai_result["risk_level"])
+        if case.status in {"waiting_review", "needs_more_info"} and (has_stale or index % 5 == 0) and case.due_at is not None:
+            case.due_at = datetime.utcnow() - timedelta(hours=3)
+
         _log_event(
             db,
             case.case_id,
@@ -352,8 +421,11 @@ def create_case(payload: CaseCreateRequest, db: Session = Depends(get_db)) -> Ca
         external_ref=payload.external_ref,
         user_description=payload.user_description,
         notes=payload.notes,
+        owner=_default_owner(payload.anomaly_type, payload.external_ref),
+        assigned_at=datetime.utcnow(),
         status="created",
     )
+    _apply_sla(case, "medium", base_time=datetime.utcnow())
     db.add(case)
     _log_event(
         db,
@@ -362,6 +434,7 @@ def create_case(payload: CaseCreateRequest, db: Session = Depends(get_db)) -> Ca
         {
             "anomaly_type": payload.anomaly_type,
             "external_ref": payload.external_ref,
+            "owner": case.owner,
         },
     )
     db.commit()
@@ -415,6 +488,7 @@ async def analyze_case(case_id: str, db: Session = Depends(get_db)) -> AnalyzeCa
 
     _store_ai_result(db, case, run_id, ai_result)
     case.status = "waiting_review" if ai_result["needs_human_review"] else "completed"
+    _apply_sla(case, ai_result["risk_level"])
     _log_event(
         db,
         case.case_id,
@@ -458,6 +532,7 @@ def review_case(
         case.status = "rejected"
     else:
         case.status = "needs_more_info"
+    _apply_sla(case, ai_result.risk_level)
 
     _log_event(
         db,
@@ -472,6 +547,44 @@ def review_case(
     )
     db.commit()
     return {"updated_status": case.status}
+
+
+@app.post("/api/cases/{case_id}/assign")
+def assign_case(
+    case_id: str,
+    payload: AssignmentUpdate,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    case = _case_or_404(db, case_id)
+    context = _latest_context(db, case.case_id)
+    ai_row = _latest_ai_result(db, case.case_id)
+    previous_owner = case.owner or _default_owner(case.case_type, case.external_ref)
+    risk_level = _risk_level_for_case(case, context, ai_row)
+
+    case.owner = payload.owner
+    case.assigned_at = datetime.utcnow()
+    if payload.reset_sla or case.due_at is None:
+        _apply_sla(case, risk_level, base_time=case.assigned_at)
+
+    _log_event(
+        db,
+        case.case_id,
+        "assignment_updated",
+        {
+            "from_owner": previous_owner,
+            "to_owner": payload.owner,
+            "assigned_by": payload.assigned_by,
+            "comment": payload.comment,
+            "sla_status": _sla_status(case),
+        },
+    )
+    db.commit()
+    return {
+        "owner": case.owner,
+        "assigned_at": case.assigned_at,
+        "due_at": case.due_at,
+        "sla_status": _sla_status(case),
+    }
 
 
 @app.get("/api/cases/{case_id}", response_model=CaseDetailResponse)
@@ -494,8 +607,11 @@ def get_case_detail(case_id: str, db: Session = Depends(get_db)) -> CaseDetailRe
             "user_description": case.user_description,
             "notes": case.notes,
             "status": case.status,
-            "owner": _demo_owner(case.external_ref),
+            "owner": case.owner or _default_owner(case.case_type, case.external_ref),
             "queue_bucket": _queue_bucket(case.status),
+            "assigned_at": case.assigned_at,
+            "due_at": case.due_at,
+            "sla_status": _sla_status(case),
             "created_at": case.created_at,
             "updated_at": case.updated_at,
         },
@@ -527,18 +643,16 @@ def get_case_detail(case_id: str, db: Session = Depends(get_db)) -> CaseDetailRe
 def list_recent_cases(
     limit: int = Query(default=20, ge=1, le=50),
     status: str | None = Query(default=None),
+    sla_status: str | None = Query(default=None),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    stmt = select(Case).order_by(Case.updated_at.desc())
-    if status and status != "all":
-        stmt = stmt.where(Case.status == status)
-    rows = db.scalars(stmt.limit(limit)).all()
-    all_rows = db.scalars(select(Case)).all()
+    all_rows = db.scalars(select(Case).order_by(desc(Case.updated_at))).all()
     items = []
     metrics = {
         "all_open": 0,
         "waiting_review": 0,
         "needs_more_info": 0,
+        "overdue": 0,
         "high_risk": 0,
         "completed": 0,
     }
@@ -548,22 +662,31 @@ def list_recent_cases(
         rule_results = context.rule_results_json if context else {}
         risk_level = (ai_row.risk_level if ai_row else None) or rule_results.get("risk_level") or "low"
         bucket = _queue_bucket(row.status)
+        current_sla_status = _sla_status(row)
         if bucket in {"waiting_review", "needs_more_info", "new"}:
             metrics["all_open"] += 1
         if row.status == "waiting_review":
             metrics["waiting_review"] += 1
         if row.status == "needs_more_info":
             metrics["needs_more_info"] += 1
+        if current_sla_status == "overdue":
+            metrics["overdue"] += 1
         if risk_level == "high":
             metrics["high_risk"] += 1
         if row.status == "completed":
             metrics["completed"] += 1
-    for row in rows:
+
+    for row in all_rows:
         context = _latest_context(db, row.case_id)
         ai_row = _latest_ai_result(db, row.case_id)
         rule_results = context.rule_results_json if context else {}
         risk_level = (ai_row.risk_level if ai_row else None) or rule_results.get("risk_level") or "low"
         bucket = _queue_bucket(row.status)
+        current_sla_status = _sla_status(row)
+        if status and status != "all" and row.status != status:
+            continue
+        if sla_status and sla_status != "all" and current_sla_status != sla_status:
+            continue
         items.append(
             {
                 "case_id": row.case_id,
@@ -573,7 +696,10 @@ def list_recent_cases(
                 "queue_bucket": bucket,
                 "risk_level": risk_level,
                 "rule_hit_count": len(rule_results.get("rule_hits", [])),
-                "owner": _demo_owner(row.external_ref),
+                "owner": row.owner or _default_owner(row.case_type, row.external_ref),
+                "assigned_at": row.assigned_at,
+                "due_at": row.due_at,
+                "sla_status": current_sla_status,
                 "updated_at": row.updated_at,
                 "created_at": row.created_at,
                 "summary": ai_row.summary if ai_row else row.user_description,
@@ -581,5 +707,5 @@ def list_recent_cases(
         )
     return {
         "metrics": metrics,
-        "items": items,
+        "items": items[:limit],
     }

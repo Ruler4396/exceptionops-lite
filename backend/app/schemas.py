@@ -70,6 +70,13 @@ class ReviewDecision(BaseModel):
     comment: str | None = Field(default=None, max_length=1000)
 
 
+class AssignmentUpdate(BaseModel):
+    owner: str = Field(min_length=2, max_length=128)
+    assigned_by: str = Field(min_length=2, max_length=128)
+    comment: str | None = Field(default=None, max_length=1000)
+    reset_sla: bool = False
+
+
 class ReviewResult(BaseModel):
     reviewer: str
     decision: str
@@ -90,4 +97,3 @@ class CaseDetailResponse(BaseModel):
     ai_result: dict[str, Any] | None
     review_result: dict[str, Any] | None
     audit_logs: list[AuditLogEntry]
-
