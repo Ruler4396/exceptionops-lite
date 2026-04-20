@@ -191,11 +191,18 @@ export function CaseDetailPage() {
   return (
     <div className="page-shell detail-shell">
       <header className="detail-hero compact-header">
-        <div>
-          <p className="panel-topline">案例工作区</p>
+        <div className="workspace-title-block">
+          <p className="panel-topline">异常处理页</p>
           <h1>{detail.base_info.case_id}</h1>
           <p className="detail-subline">
             {detail.base_info.external_ref} · {anomalyTypeLabel[detail.base_info.case_type] ?? detail.base_info.case_type} · {detail.base_info.owner}
+          </p>
+          <p className="hero-hint">
+            {!detail.ai_result
+              ? "先启动分析，再进入处理动作"
+              : detail.ai_result.needs_human_review && !detail.review_result
+                ? "右侧可直接提交审核"
+                : "向下查看证据、规则与处理留痕"}
           </p>
         </div>
         <div className="hero-actions">
@@ -375,6 +382,7 @@ export function CaseDetailPage() {
                 <button className="primary-button full-width" type="submit" disabled={actionLoading}>
                   {actionLoading ? "提交中..." : "提交审核"}
                 </button>
+                <p className="form-hint">提交后会自动写入时间线</p>
               </form>
             ) : detail.review_result ? (
               <div className="review-result">

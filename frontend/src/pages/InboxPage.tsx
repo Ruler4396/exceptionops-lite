@@ -139,17 +139,20 @@ export function InboxPage() {
   return (
     <div className="page-shell inbox-shell">
       <header className="workspace-header">
-        <div>
-          <p className="panel-topline">ExceptionOps Lite</p>
+        <div className="workspace-title-block">
+          <p className="panel-topline">运营异常处理台</p>
           <h1>异常工作台</h1>
-          <p className="detail-subline">采购 / 履约 / 财务跨系统异常工作台</p>
+          <p className="detail-subline">采购、履约、财务跨系统异常统一处理</p>
         </div>
-        <div className="workspace-search">
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="搜索案例编号、单号、摘要、负责人"
-          />
+        <div className="workspace-actions">
+          <div className="workspace-search">
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="搜索案例编号、单号、摘要、负责人"
+            />
+          </div>
+          <p className="workspace-hint">点击案例进入处理页，点击表头切换排序</p>
         </div>
       </header>
 
@@ -157,24 +160,24 @@ export function InboxPage() {
 
       <section className="kpi-strip">
         <article className="kpi-card">
-          <span>待处理</span>
           <strong>{data?.metrics.all_open ?? 0}</strong>
+          <span>待处理</span>
         </article>
         <article className="kpi-card">
-          <span>待审核</span>
           <strong>{data?.metrics.waiting_review ?? 0}</strong>
+          <span>待审核</span>
         </article>
         <article className="kpi-card">
-          <span>待补证</span>
           <strong>{data?.metrics.needs_more_info ?? 0}</strong>
+          <span>待补证</span>
         </article>
         <article className="kpi-card">
-          <span>高风险</span>
           <strong>{data?.metrics.high_risk ?? 0}</strong>
+          <span>高风险</span>
         </article>
         <article className="kpi-card">
-          <span>已完成</span>
           <strong>{data?.metrics.completed ?? 0}</strong>
+          <span>已完成</span>
         </article>
       </section>
 
@@ -191,7 +194,9 @@ export function InboxPage() {
               </button>
             ))}
           </div>
-          <div className="queue-count">共 {items.length} 条</div>
+          <div className="queue-meta">
+            <span className="queue-count">共 {items.length} 条</span>
+          </div>
         </div>
 
         <div className="table-shell">
@@ -233,10 +238,13 @@ export function InboxPage() {
             </thead>
             <tbody>
               {items.map((item) => (
-                <tr key={item.case_id} onClick={() => navigate(`/cases/${item.case_id}`)}>
+                <tr key={item.case_id} className="queue-row" onClick={() => navigate(`/cases/${item.case_id}`)}>
                   <td className="cell-case">
                     <strong>{item.case_id}</strong>
-                    <span>{item.external_ref}</span>
+                    <div className="case-meta-row">
+                      <span>{item.external_ref}</span>
+                      <em>查看详情</em>
+                    </div>
                   </td>
                   <td className="cell-center">{formatDate(item.updated_at)}</td>
                   <td>{anomalyTypeLabel[item.case_type] ?? item.case_type}</td>
